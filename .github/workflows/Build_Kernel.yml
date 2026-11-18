@@ -40,6 +40,7 @@ on:
         default: 'SukiSU-Ultra'
         options:
           - 'SukiSU-Ultra'
+          - 'Nova'
           - 'RKSU'
           - 'KernelSU'
           - 'None'
@@ -200,7 +201,13 @@ jobs:
           
           echo "⚙️ Configure KernelSU Variants: $KSU_VARIANT (配置 KernelSU 变体: $KSU_VARIANT)"
           
-          if [ "$KSU_VARIANT" == "SukiSU-Ultra" ]; then
+          if [ "$KSU_VARIANT" == "Nova" ]; then
+            echo "🔧 Integrating SukiSU-Nova from GitHub (配置 SukiSU-Nova)..."
+            git clone --depth 1 https://github.com/SukiSU-Nova/SukiSU-Nova ./KernelSU
+            ln -sfn "$(realpath --relative-to=drivers "$PWD/KernelSU/kernel")" drivers/kernelsu
+            grep -q "kernelsu" drivers/Makefile || printf "\nobj-\$(CONFIG_KSU) += kernelsu/\n" >> drivers/Makefile
+            grep -q 'drivers/kernelsu/Kconfig' drivers/Kconfig || sed -i '/endmenu/i source "drivers/kernelsu/Kconfig"' drivers/Kconfig
+          elif [ "$KSU_VARIANT" == "SukiSU-Ultra" ]; then
             curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/susfs-dev/kernel/setup.sh" | bash -s susfs-dev
           elif [ "$KSU_VARIANT" == "RKSU" ]; then
             curl -LSs "https://raw.githubusercontent.com/rsuntk/KernelSU/susfs-v1.5.5/kernel/setup.sh" | bash -s susfs-v1.5.5
