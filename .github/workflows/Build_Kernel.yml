@@ -124,8 +124,15 @@ jobs:
           sudo apt install -y \
             bc binutils-dev bison build-essential ca-certificates ccache cmake curl file flex \
             git libelf-dev libssl-dev make ninja-build python3-dev texinfo u-boot-tools xz-utils \
-            zlib1g-dev libncurses-dev wget zip cpio python3 python3-pip tree gcc clang lld llvm jq \
-            libxml2 libxml2-dev
+            zlib1g-dev libncurses-dev wget zip cpio python3 python3-pip tree gcc clang lld llvm jq
+          # libxml2 的包名在 Ubuntu 24+ 变成了 libxml2t64，探测式安装，避免 apt 整条失败
+          for pkg in libxml2t64 libxml2 libxml2-16; do
+            if apt-cache show "$pkg" >/dev/null 2>&1; then
+              echo "installing $pkg"
+              sudo apt-get install -y "$pkg"
+              break
+            fi
+          done
           echo "✅ Dependency installation complete (依赖安装完成)"
           
       - name: ⚙️ Configuring ccache (配置 ccache)
