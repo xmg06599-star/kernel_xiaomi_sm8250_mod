@@ -229,6 +229,10 @@ jobs:
             fi
             # 4.19 没有 linux/pgtable.h（5.0 才拆出来），用 asm/pgtable.h 顶替
             [ -f include/linux/pgtable.h ] || printf '#include <asm/pgtable.h>\n' > include/linux/pgtable.h
+            # 4.19 没有 strncpy_from_user_nofault（5.0+），用 strncpy_from_user 顶替
+            if ! grep -q 'strncpy_from_user_nofault' include/linux/uaccess.h; then
+              printf '\n#ifndef strncpy_from_user_nofault\n#define strncpy_from_user_nofault(dst, src, count) strncpy_from_user(dst, src, count)\n#endif\n' >> include/linux/uaccess.h
+            fi
           elif [ "$KSU_VARIANT" == "SukiSU-Ultra" ]; then
             curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/susfs-dev/kernel/setup.sh" | bash -s susfs-dev
           elif [ "$KSU_VARIANT" == "RKSU" ]; then
