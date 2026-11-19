@@ -211,6 +211,8 @@ jobs:
             if ! grep -q 'define MODULE_IMPORT_NS' include/linux/module.h; then
               printf '\n#ifndef MODULE_IMPORT_NS\n#define MODULE_IMPORT_NS(x)\n#endif\n' >> include/linux/module.h
             fi
+            # 4.19 没有 linux/pgtable.h（5.0 才拆出来），用 asm/pgtable.h 顶替
+            [ -f include/linux/pgtable.h ] || printf '#include <asm/pgtable.h>\n' > include/linux/pgtable.h
           elif [ "$KSU_VARIANT" == "SukiSU-Ultra" ]; then
             curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/susfs-dev/kernel/setup.sh" | bash -s susfs-dev
           elif [ "$KSU_VARIANT" == "RKSU" ]; then
