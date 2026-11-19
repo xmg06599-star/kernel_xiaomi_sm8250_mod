@@ -125,14 +125,17 @@ jobs:
             bc binutils-dev bison build-essential ca-certificates ccache cmake curl file flex \
             git libelf-dev libssl-dev make ninja-build python3-dev texinfo u-boot-tools xz-utils \
             zlib1g-dev libncurses-dev wget zip cpio python3 python3-pip tree gcc clang lld llvm jq
-          # libxml2 的包名在 Ubuntu 24+ 变成了 libxml2t64，探测式安装，避免 apt 整条失败
-          for pkg in libxml2t64 libxml2 libxml2-16; do
-            if apt-cache show "$pkg" >/dev/null 2>&1; then
-              echo "installing $pkg"
-              sudo apt-get install -y "$pkg"
-              break
-            fi
-          done
+          # ZyCromerZ Clang 的 ld.lld 需要 libxml2.so.2，Ubuntu 26.04 只有 .so.16，做软链
+          echo "== libxml2 in system =="
+          find /usr/lib /lib -name 'libxml2.so*' 2>/dev/null | head -5
+          so16=$(find /usr/lib /lib -name 'libxml2.so.16' 2>/dev/null | head -1)
+          if [ -n "$so16" ]; then
+            echo "linking $so16 -> libxml2.so.2"
+            sudo ln -sf "$so16" /usr/lib/x86_64-linux-gnu/libxml2.so.2
+            sudo ldconfig || true
+          else
+            echo "警告: 系统里没有 libxml2.so.16"
+          fi
           echo "✅ Dependency installation complete (依赖安装完成)"
           
       - name: ⚙️ Configuring ccache (配置 ccache)
